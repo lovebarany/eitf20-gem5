@@ -42,17 +42,29 @@ class L1Cache(AbstractClassicCacheHierarchy):
     def get_cpu_side_port(self) -> Port:
         return self.membus.cpu_side_ports
     def connect_mem_system(self, board: AbstractBoard) -> None:
+        """
+        Common method for all L1-only caches to connect the memory bus
+        to the system port of the board.
+        """
         board.connect_system_port(self.membus.cpu_side_ports)
 
         for _, port in board.get_mem_ports():
             self.membus.mem_side_ports = port
+
     def connect_interrupts(self, cpu) -> None:
+        """
+        Common method for all L1-only caches to connect interrupt ports.
+
+        NOTE: Expects that an X86 processor is used!
+        """
         int_req_port = self.membus.mem_side_ports
         int_resp_port = self.membus.cpu_side_ports
         cpu.connect_interrupt(int_req_port, int_resp_port)
 
 class UnifiedL1(L1Cache):
-
+    """
+    L1-only cache, unified data and instruction cache.
+    """
     def __init__(
             self,
             l1_sets: int,
@@ -62,27 +74,44 @@ class UnifiedL1(L1Cache):
         super().__init__(l1_sets=l1_sets,l1_assoc=l1_assoc,block_size=block_size)
 
     def incorporate_cache(self, board: AbstractBoard) -> None:
+        """
+        Connect the cache to the processor.
+        """
+
         self.connect_mem_system(board)
 
+        # One private L1 cache per core
         self.l1caches = [
                 # Specify the size as the computed size (in Bytes) divided by 1000
                 L1ICache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
+        """
+        We need crossbars to connect icache and dcache lines to the same processor port
+        We reuse the L2XBar() simobject, as this is similar to an L1D and L1I connecting
+        to a shared L2.
+        """
         self.xbars = [
-                # We need crossbars to connect icache and dcache lines to same port
                 L2XBar() for _ in range(board.get_processor().get_num_cores())
                 ]
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
+            # CPU -> Crossbar
             cpu.connect_icache(self.xbars[i].cpu_side_ports)
             cpu.connect_dcache(self.xbars[i].cpu_side_ports)
+            # Crossbar -> Unified L1
             self.xbars[i].mem_side_ports = self.l1caches[i].cpu_side
+            # Unified L1 -> Membus
             self.membus.cpu_side_ports = self.l1caches[i].mem_side
 
             self.connect_interrupts(cpu)
 
 class L1DOnly(L1Cache):
+    """
+    L1-only cache. Only data memory is connected to cache, instruction directly
+    to memory.
+    """
+
     def __init__(
             self,
             l1_sets: int,
@@ -100,15 +129,21 @@ class L1DOnly(L1Cache):
                 ]
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
-            # Connect I-cache directly to memory
+            # CPU instruction line -> Membus
             cpu.connect_icache(self.get_cpu_side_port())
-            # Connect D-cache to cache
+            # CPU data line -> L1D
             cpu.connect_dcache(self.l1dcaches[i].cpu_side)
+            # L1D -> Membus
             self.l1dcaches[i].mem_side = self.get_cpu_side_port()
 
             self.connect_interrupts(cpu)
 
 class L1IOnly(L1Cache):
+    """
+    L1-only cache. Only instruction memory is connected to cache, data directly
+    to memory.
+    """
+
     def __init__(
             self,
             l1_sets: int,
@@ -126,19 +161,26 @@ class L1IOnly(L1Cache):
                 ]
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
-            # Connect D-cache directly to memory
+            # CPU data line -> Membus
             cpu.connect_dcache(self.get_cpu_side_port())
-            # Connect I-cache to cache
+            # CPU instruction line -> L1I
             cpu.connect_icache(self.l1dcaches[i].cpu_side)
+            # L1I -> Membus
             self.l1dcaches[i].mem_side = self.get_cpu_side_port()
 
             self.connect_interrupts(cpu)
 
 class UnifiedL1L2(AbstractClassicCacheHierarchy):
+    """
+    Simple cache hierarchy consisting of a unified L1 and unified L2 cache
+    """
+
     def _get_default_membus(self) -> SystemXBar:
         """
-        A method used to obtain the default memory bus of 64 bit in width for
-        the unified cache.
+        A method used to obtain the default memory bus for this hierarchy.
+
+        The width is controlled by the l2_block_size parameter passed during
+        class construction.
 
         :returns: The default memory bus for the UnifiedL1L2 cache
         """
@@ -174,6 +216,7 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
         self._l2_size = l2_size
 
         self.membus = self._get_default_membus()
+
     def get_mem_side_port(self) -> Port:
         return self.membus.mem_side_ports
     def get_cpu_side_port(self) -> Port:
@@ -191,6 +234,9 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
     def incorporate_cache(self, board: AbstractBoard) -> None:
         self.connect_mem_system(board)
 
+        """
+        Each core has a private L1 and L2 cache.
+        """
         self.l1caches = [
                 L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
@@ -199,16 +245,25 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
                 L2Cache(size=f"{self._l2_size//1024}kB",assoc=self._l2_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
+        """
+        We need crossbars to connect icache and dcache lines to the same processor port
+        We reuse the L2XBar() simobject, as this is similar to an L1D and L1I connecting
+        to a shared L2.
+        """
         self.xbars = [
-                # We need crossbars to connect icache and dcache lines to same port
                 L2XBar() for _ in range(board.get_processor().get_num_cores())
                 ]
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
+            # CPU instruction line -> Crossbar
             cpu.connect_icache(self.xbars[i].cpu_side_ports)
+            # CPU data line -> Crossbar
             cpu.connect_dcache(self.xbars[i].cpu_side_ports)
+            # Crossbar -> L1
             self.xbars[i].mem_side_ports = self.l1caches[i].cpu_side
+            # L1 -> L2
             self.l2caches[i].cpu_side = self.l1caches[i].mem_side
+            # L2 -> Membus
             self.membus.cpu_side_ports = self.l2caches[i].mem_side
 
             self.connect_interrupts(cpu)

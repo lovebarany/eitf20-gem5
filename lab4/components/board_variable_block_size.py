@@ -1,3 +1,29 @@
+# Copyright (c) 2021 The Regents of the University of California
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met: redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer;
+# redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution;
+# neither the name of the copyright holders nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 from abc import ABCMeta
 
 from gem5.utils.override import overrides
@@ -17,11 +43,19 @@ from m5.objects import (
 
 from typing import List
 
+"""
+In this file we define a board that will act the same as the SimpleBoard object,
+but with one main difference. This board will have programmable block size, which
+we modify in our experiments. The block size provided here should be the same as
+the block size of the data/instruction line to/from the processor on the board.
 
+The majority of these classes are copied from abstract_system_board.py and simple_board.py
+"""
 
 class AbstractSystemBoardVariableBlockSize(System, AbstractBoard):
     """
     An abstract board for cases where boards should inherit from System.
+    Since the block size is set in System, we need this here.
     """
 
     __metaclass__ = ABCMeta
@@ -84,7 +118,7 @@ class BoardVariableBlockSize(AbstractSystemBoardVariableBlockSize, SEBinaryWorkl
     @overrides(AbstractSystemBoardVariableBlockSize)
     def get_io_bus(self) -> IOXBar:
         raise NotImplementedError(
-            "SimpleBoard does not have an IO Bus. "
+            "BoardVariableBlockSize does not have an IO Bus. "
             "Use `has_io_bus()` to check this."
         )
 
@@ -95,7 +129,7 @@ class BoardVariableBlockSize(AbstractSystemBoardVariableBlockSize, SEBinaryWorkl
     @overrides(AbstractSystemBoardVariableBlockSize)
     def get_dma_ports(self) -> List[Port]:
         raise NotImplementedError(
-            "SimpleBoard does not have DMA Ports. "
+            "BoardVariableBlockSize does not have DMA Ports. "
             "Use `has_dma_ports()` to check this."
         )
 
@@ -106,7 +140,7 @@ class BoardVariableBlockSize(AbstractSystemBoardVariableBlockSize, SEBinaryWorkl
     @overrides(AbstractSystemBoardVariableBlockSize)
     def get_mem_side_coherent_io_port(self) -> Port:
         raise NotImplementedError(
-            "SimpleBoard does not have any I/O ports. Use `has_coherent_io` to "
+            "BoardVariableBlockSize does not have any I/O ports. Use `has_coherent_io` to "
             "check this."
         )
 

@@ -18,6 +18,7 @@ Parameters: (leave these at default values, i.e. don't specify any)
     - localPredictorSize: unsigned. Changes the number of entries in the n-bit counter table. Default: 2048
     - localCtrBits: unsigned. n, number of bits in the saturation counters. Keep this at 2 for this experiment!
 """
+import os
 
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4

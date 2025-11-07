@@ -4,6 +4,7 @@ from components.processor import Processor
 from gem5.components.memory.multi_channel import DualChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
+import os
 
 # We specify it here because we need to set it in several locations!
 block_size = 32 # Bytes. Don't change for this experiment. 

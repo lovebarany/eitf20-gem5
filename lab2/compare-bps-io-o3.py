@@ -24,6 +24,7 @@ Parameters: (leave these at default values, i.e. don't specify any)
     - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
 
 """
+import os
 
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4

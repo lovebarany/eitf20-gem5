@@ -17,6 +17,7 @@ Parameters: (leave these at default values, i.e. don't specify any)
     - choicePredictorSize: unsigned. Number of n-bit counters in choice predictor.
     - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
 """
+import os
 
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4
@@ -45,7 +46,7 @@ board = SimpleBoard(
 )
 
 # Sets the workload based on the --benchmark=WORKLOAD
-board.set_workload(obtain_resource("x86-gapbs-bfs-run"))
+board.set_se_binary_workload(obtain_resource("WORKLOAD"), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

@@ -20,7 +20,7 @@ board = BoardVariableBlockSize(
         block_size=block_size, 
 )
 
-board.set_se_binary_workload(obtain_resource("x86-matrix-multiply"))
+board.set_se_binary_workload(obtain_resource("WORKLOAD"), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

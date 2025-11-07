@@ -44,7 +44,7 @@ board = SimpleBoard(
 )
 
 # Sets the workload based on the --benchmark=WORKLOAD
-board.set_workload(obtain_resource("x86-gapbs-bfs-run"))
+board.set_se_binary_workload(obtain_resource("WORKLOAD"), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

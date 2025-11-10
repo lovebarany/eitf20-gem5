@@ -55,7 +55,7 @@ class VariableBPO3Core(BaseCPUCore):
         super().__init__(X86O3CPU(), ISA.X86)
 
         # Specify branch predictor, passed from instantiation of this class
-        self.branchPred = bp
+        self.core.branchPred = bp
 
         # Leave rest of O3 settings to be default
 

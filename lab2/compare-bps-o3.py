@@ -1,4 +1,4 @@
-from components.bp_processors import VariableBPInOrderProcessor, VariableBPO3Processor
+from components.bp_processors import VariableBPO3Processor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
 from gem5.components.memory.single_channel import SingleChannelDDR4_2400
@@ -39,9 +39,8 @@ memory = SingleChannelDDR4_2400(size='4GB')
 
 # Processor
 #
-# In-order Processor: VariableBPInOrderProcessor
 # Out-of-order Processor: VariableBPO3Processor
-processor = VariableBPInOrderProcessor(
+processor = VariableBPO3Processor(
         bp = INSERT_BP_HERE()
 )
 

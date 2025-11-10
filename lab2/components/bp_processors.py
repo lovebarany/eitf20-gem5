@@ -69,23 +69,9 @@ class VariableBPO3Processor(BaseCPUProcessor):
 """
 In-order dual-core processor with varying branch penalty and branch predictor
 """
-class VariableInOrderCore(BaseCPUCore):
+class VariableO3Core(BaseCPUCore):
     def __init__(self, predictor, penalty):
         super().__init__(X86O3CPU(), ISA.X86)
-        # Constrain pipeline width, if width is 1 it doesn't really matter how
-        # much we do in-order
-        self.core.fetchWidth=1
-        self.core.decodeWidth=1
-        self.core.issueWidth=1
-        self.core.commitWidth=1
-
-        # Same as pipeline width, if the ROB is very small, it's hard to re-order at all
-        self.core.numROBEntries=8
-        self.core.numIQEntries=4
-
-        # We can't limit these further, as there is a lower limit to how many we need.
-        self.core.numPhysIntRegs=64
-        self.core.numPhysFloatRegs=64
 
         # Specify branch predictor, passed from instantiation of this class
         self.core.branchPred = predictor
@@ -107,8 +93,8 @@ class VariableInOrderCore(BaseCPUCore):
         """
         self.core.commitToFetchDelay = penalty
 
-class VariableInOrderProcessor(BaseCPUProcessor):
+class VariableO3Processor(BaseCPUProcessor):
     def __init__(self, predictor, penalty):
-        cores = [VariableInOrderCore(predictor, penalty) for _ in range(2)]
+        cores = [VariableO3Core(predictor, penalty) for _ in range(2)]
         super().__init__(cores)
 

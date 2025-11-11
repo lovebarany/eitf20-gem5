@@ -4,7 +4,7 @@ from gem5.isas import ISA
 from m5.objects import X86O3CPU 
 
 """
-'In-order' dual-core processor
+'In-order' single-core processor
 
 This processor will not be a TRUE in-order processor. There is a detailed in-order CPU model: MinorCPU,
 but it has some severe limitations:
@@ -42,8 +42,8 @@ class VariableBPInOrderCore(BaseCPUCore):
 
 class VariableBPInOrderProcessor(BaseCPUProcessor):
     def __init__(self,bp):
-        # Dual-core system, otherwise we might have problems running multithreaded benchmarks
-        cores = [VariableBPInOrderCore(bp) for _ in range(2)]
+        # Single-core system, but BaseCPUProcessor expects list of cores
+        cores = [VariableBPInOrderCore(bp) for _ in range(1)]
         super().__init__(cores)
 
 

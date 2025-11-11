@@ -32,7 +32,7 @@ cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
 )
 
 # Memory
-memory = SingleChannelDDR4_2400(size='4GB')
+memory = SingleChannelDDR4_2400(size='8GB')
 
 # Processor
 processor = VariableO3Processor(

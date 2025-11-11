@@ -7,7 +7,7 @@ from m5.objects.FuncUnitConfig import *
 from m5.objects.FUPool import *
  
 """
-'In-order' dual-core processor
+'In-order' single-core processor
 
 This processor will not be a TRUE in-order processor. There is a detailed in-order CPU model: MinorCPU,
 but it has some severe limitations:
@@ -45,8 +45,8 @@ class VariableBPInOrderCore(BaseCPUCore):
 
 class VariableBPInOrderProcessor(BaseCPUProcessor):
     def __init__(self,bp):
-        # Dual-core system, otherwise we might have problems running multithreaded benchmarks
-        cores = [VariableBPInOrderCore(bp) for _ in range(2)]
+        # Single-core system, but BaseCPUProcessor expects list of cores
+        cores = [VariableBPInOrderCore(bp) for _ in range(1)]
         super().__init__(cores)
 
 
@@ -58,7 +58,7 @@ class VariableBPO3Core(BaseCPUCore):
         super().__init__(X86O3CPU(), ISA.X86)
 
         # Specify branch predictor, passed from instantiation of this class
-        self.branchPred = bp
+        self.core.branchPred = bp
 
         # Leave rest of O3 settings to be default
 
@@ -70,49 +70,42 @@ class VariableBPO3Processor(BaseCPUProcessor):
 
 
 """
-In-order dual-core processor with varying branch penalty and branch predictor
+Smaller out-of-order processor with varying branch predictor and branch misprediction penalty
 """
-class VariableInOrderCore(BaseCPUCore):
+class VariableO3Core(BaseCPUCore):
     def __init__(self, predictor, penalty):
         super().__init__(X86O3CPU(), ISA.X86)
-        # Constrain pipeline width, if width is 1 it doesn't really matter how
-        # much we do in-order
-        self.core.fetchWidth=1
-        self.core.decodeWidth=1
-        self.core.issueWidth=1
-        self.core.commitWidth=1
 
-        # Same as pipeline width, if the ROB is very small, it's hard to re-order at all
-        self.core.numROBEntries=8
-        self.core.numIQEntries=4
-
-        # We can't limit these further, as there is a lower limit to how many we need.
-        self.core.numPhysIntRegs=64
-        self.core.numPhysFloatRegs=64
+        # We have a somewhat less wide pipeline than default
+        self.core.fetchWidth=4
+        self.core.decodeWidth=4
+        self.core.issueWidth=4
+        self.core.commitWidth=4
 
         # Specify branch predictor, passed from instantiation of this class
         self.core.branchPred = predictor
 
         """
-        Specify the branch misprediction penalty.
-        
-        Implementation note:
-        There is no parameter to directly set the branch penalty, so we use inter-stage delays to model the penalty instead.
-        A misprediction is noticed in the Issue/Execute/Writeback (IEW) stage, which is communicated to the Commit stage.
-        IEW communicates with Commit for more than just mispredictions, so we cannot use this.
-        Commit will message the Fetch stage that a misprediction has happened, and new instructions need to be fetched.
-        The only cases where this communication takes place is if an instruction needs to be squashed, that is if:
-            - a misprediction has happened.
-            - a memory order misspeculation has happened.
-        Since we have an 'in-order' processor, the second case will almost 'never' happen, so we use the delay between commit and fetch to model branch misprediction penalty
-        If you want to verify for yourself that this 'never' happens, check the following statistic in stats.txt:
-        board.processor.cores0.core.iew.memOrderViolationEvents
-        """
-        self.core.commitToFetchDelay = penalty
+        Implementation note, branch misprediction penalty:
 
-class VariableInOrderProcessor(BaseCPUProcessor):
+        There is no one parameter to set a misprediction penalty latency, so we have to get a bit creative.
+        When a misprediction is noticed, several pipeline stages are messaged, and many things happen.
+        One of these is that the Commit stage squashes all instructions in the re-order buffer (ROB).
+        The ROB squashes several instructions at a time, controlled by the `squashWidth` parameter passed.
+        As such, we scale squashWidth by our misprediction penalty, so that a higher penalty means that
+        less instructions can be squashed at once, and squashing thus takes longer.
+
+        NOTE: Squashes do not only occur due to mispredictions, but it is one source of them! Since we only
+        have one squashing unit, we have to live with this. This is a consideration you might have to consider 
+        when designing a real CPU as well. While this way of handling misprediction penalties is not perfect,
+        it is the best that we have found. Other ways could be to work with the various delay parameters, however
+        these are slightly finicky, and can lead to the simulator hanging due to (as of now) unknown reasons.
+        """
+        self.core.squashWidth = 8//penalty
+
+class VariableO3Processor(BaseCPUProcessor):
     def __init__(self, predictor, penalty):
-        cores = [VariableInOrderCore(predictor, penalty) for _ in range(2)]
+        cores = [VariableO3Core(predictor, penalty) for _ in range(1)]
         super().__init__(cores)
 
 # Helper class to configure the functional units

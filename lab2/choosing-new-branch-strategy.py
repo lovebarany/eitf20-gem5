@@ -1,22 +1,27 @@
-from components.bp_processors import VariableInOrderProcessor
+from argparser import get_workload
+from components.bp_processors import VariableO3Processor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
 from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
 
-from m5.objects import StaticBP, BiModeBP
+from m5.objects import StaticBP, TournamentBP
 """
 StaticBP -> taken/nottaken
 Parameters:
     - predictTaken: boolean. Changes predictor from taken (true) and nottaken (false)
-BiModeBP -> bimode
+TournamentBP -> tournament
 Parameters: (leave these at default values, i.e. don't specify any)
+    - localPredictorSize: unsigned. Number of n-bit counters in local table.
+    - localCtrBits: unsigned. n, number of bits in local saturation counters.
+    - localHistoryTableSize: unsigned. Number of local historical branch decisions recorded.
     - globalPredictorSize: unsigned. Number of n-bit counters in global table.
     - globalCtrBits: unsigned. n, number of bits in global saturation counters.
     - choicePredictorSize: unsigned. Number of n-bit counters in choice predictor.
     - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
 """
+import os
 
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4
@@ -28,10 +33,10 @@ cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
 )
 
 # Memory
-memory = SingleChannelDDR4_2400(size='4GB')
+memory = SingleChannelDDR4_2400(size='8GB')
 
 # Processor
-processor = VariableInOrderProcessor(
+processor = VariableO3Processor(
         predictor = INSERT_BP_HERE,
         penalty = INSERT_MISPREDICTION_PENALTY_HERE,
 )
@@ -45,7 +50,7 @@ board = SimpleBoard(
 )
 
 # Sets the workload based on the --benchmark=WORKLOAD
-board.set_workload(obtain_resource("x86-gapbs-bfs-run"))
+board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

@@ -1,4 +1,5 @@
-from components.bp_processors import VariableBPInOrderProcessor, VariableBPO3Processor
+from argparser import get_workload
+from components.bp_processors import VariableBPO3Processor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
 from gem5.components.memory.single_channel import SingleChannelDDR4_2400
@@ -24,6 +25,7 @@ Parameters: (leave these at default values, i.e. don't specify any)
     - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
 
 """
+import os
 
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4
@@ -38,9 +40,8 @@ memory = SingleChannelDDR4_2400(size='4GB')
 
 # Processor
 #
-# In-order Processor: VariableBPInOrderProcessor
 # Out-of-order Processor: VariableBPO3Processor
-processor = VariableBPInOrderProcessor(
+processor = VariableBPO3Processor(
         bp = INSERT_BP_HERE()
 )
 
@@ -52,8 +53,8 @@ board = SimpleBoard(
         cache_hierarchy=cache_hierarchy
 )
 
-# Sets the workload based on the --benchmark=WORKLOAD
-board.set_workload(obtain_resource("x86-gapbs-bfs-run"))
+# Sets the workload based on the --workload=WORKLOAD
+board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

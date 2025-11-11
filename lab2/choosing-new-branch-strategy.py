@@ -1,3 +1,4 @@
+from argparser import get_workload
 from components.bp_processors import VariableO3Processor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
@@ -49,7 +50,7 @@ board = SimpleBoard(
 )
 
 # Sets the workload based on the --benchmark=WORKLOAD
-board.set_se_binary_workload(obtain_resource("WORKLOAD"), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
+board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

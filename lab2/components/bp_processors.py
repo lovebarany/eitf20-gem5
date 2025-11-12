@@ -2,7 +2,10 @@ from gem5.components.processors.base_cpu_core import BaseCPUCore
 from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
 from gem5.isas import ISA
 from m5.objects import X86O3CPU 
-
+from m5.objects.FuncUnit import *
+from m5.objects.FuncUnitConfig import *
+from m5.objects.FUPool import *
+ 
 """
 'In-order' single-core processor
 
@@ -103,5 +106,61 @@ class VariableO3Core(BaseCPUCore):
 class VariableO3Processor(BaseCPUProcessor):
     def __init__(self, predictor, penalty):
         cores = [VariableO3Core(predictor, penalty) for _ in range(1)]
+        super().__init__(cores)
+
+# Helper class to configure the functional units
+class Lab2FUPool(FUPool):
+    FUList = [
+        IntALU(),
+        IntMultDiv(),
+        FP_ALU(),
+        FP_MultDiv(),
+        ReadPort(),
+        SIMD_Unit(),
+        # Matrix_Unit(),
+        PredALU(),
+        WritePort(),
+        RdWrPort(),
+        IprPort(),
+        ]
+
+
+"""Variable pipeline width O3 processor
+"""
+
+class VariableWidthO3Core(BaseCPUCore):
+    
+    def __init__(self, predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
+        super().__init__(X86O3CPU(), ISA.X86)
+        # Choose pipeline width for each stage
+        self.core.fetchWidth=fetchWidth
+        self.core.decodeWidth=decodeWidth
+        self.core.renameWidth=renameWidth
+        self.core.dispatchWidth = issueWidth
+        self.core.issueWidth=issueWidth
+        self.core.wbWidth = issueWidth
+        self.core.commitWidth=commitWidth
+        self.core.squashWidth = commitWidth
+
+        self.core.numROBEntries=32
+        # Instruction queue depth
+        self.core.numIQEntries=4
+
+        # We can't limit these further, as there is a lower limit to how many we need.
+        self.core.numPhysIntRegs=64
+        self.core.numPhysFloatRegs=64
+
+        # Specify branch predictor, passed from instantiation of this class
+        self.core.branchPred = predictor
+        self.core.commitToFetchDelay = penalty
+
+
+        self.fuPool = Lab2FUPool()
+
+
+class VariableWidthO3Processor(BaseCPUProcessor):
+    def __init__(self,predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
+        # Single-core system, but BaseCPUProcessor expects list of cores
+        cores = [VariableWidthO3Core(predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth)for _ in range(2)]
         super().__init__(cores)
 

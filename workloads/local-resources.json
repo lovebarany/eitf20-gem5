@@ -1,0 +1,86 @@
+[
+	{
+		"category": "binary",
+		"id": "hello-gem5",
+		"description": "A simple hello world, to test the environment",
+		"architecture": "X86",
+		"size": 1,
+		"tags": [],
+		"is_zipped": false,
+		"md5sum": "FILL IN MD5SUM",
+		"source": "",
+		"url": "FILL IN PATH",
+		"author": [
+			"Love Barany",
+			"Dumitra Iancu"
+		],
+		"resource_version": "1.0.0",
+		"gem5_versions": [
+			"25.0"
+		],
+		"example_usage": "obtain_resource(resource_id=\"hello-gem5\")"
+	},
+	{
+		"category": "binary",
+		"id": "bubblesort",
+		"description": "Sorting a fixed list with bubble sort algorithm.",
+		"architecture": "X86",
+		"size": "1",
+		"tags": [],
+		"is_zipped": false,
+		"md5sum": "FILL IN MD5SUM",
+		"source": "https://gist.github.com/christophewang/31ff04b338ad60a318db",
+		"url": "FILL IN PATH",
+		"author": [
+			"Christophe Wang",
+			"Dumitra Iancu",
+			"Love Barany"
+		],
+		"resource_version": "1.0.0",
+		"gem5_versions": [
+			"25.0"
+		],
+		"example_usage": "obtain_resource(resource_id=\"bubblesort\")"
+	},
+	{
+		"category": "binary",
+		"id": "matrix-multiply",
+		"description": "Multiplication of two matrices, one with integer values, and one with floating point values.",
+		"architecture": "X86",
+		"size": "1",
+		"tags": [],
+		"is_zipped": false,
+		"md5sum": "FILL IN MD5SUM",
+		"url": "FILL IN PATH",
+		"author": [
+			"Dumitra Iancu",
+			"Love Barany"
+		],
+		"resource_version": "1.0.0",
+		"gem5_versions": [
+			"25.0"
+		],
+		"example_usage": "obtain_resource(resource_id=\"matrix-multiply\")"
+	},
+	{
+		"category": "binary",
+		"id": "binary-search",
+		"description": "Binary search algorithm on a list with 300 elements",
+		"architecture": "X86",
+		"size": "1",
+		"tags": [],
+		"is_zipped": false,
+		"md5sum": "FILL IN MD5SUM",
+		"source": "https://gist.github.com/rcanepa/fc29c00c4185c4a13b54",
+		"url": "FILL IN PATH",
+		"author": [
+			"Dumitra Iancu",
+			"Love Barany"
+		],
+		"resource_version": "1.0.0",
+		"gem5_versions": [
+			"25.0"
+		],
+		"example_usage": "obtain_resource(resource_id=\"binary-search\")"
+	}
+]

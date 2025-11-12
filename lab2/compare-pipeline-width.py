@@ -19,10 +19,10 @@ cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
 memory = SingleChannelDDR4_2400(size='4GB')
 
 # Change the pipeline width!
-pw = INSERTPIPELINEWIDTH
+pw = 8
 # Processor
 processor = VariableWidthO3Processor(
-        predictor = TournamentBP(), 
+        predictor = LocalBP(), 
         penalty = 1,
         fetchWidth= pw,
         decodeWidth= pw,

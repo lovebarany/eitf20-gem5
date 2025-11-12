@@ -3,7 +3,7 @@ from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
 from gem5.isas import ISA
 from m5.objects import X86O3CPU 
 from m5.objects.FuncUnit import *
-from m5.objects.FuncUnitConfig import *
+from FuncUnitConfig import *
 from m5.objects.FUPool import *
  
 """
@@ -111,7 +111,7 @@ class VariableO3Processor(BaseCPUProcessor):
 # Helper class to configure the functional units
 class Lab2FUPool(FUPool):
     FUList = [
-        IntALU(),
+        IntALU(count=1),
         IntMultDiv(),
         FP_ALU(),
         FP_MultDiv(),
@@ -142,7 +142,7 @@ class VariableWidthO3Core(BaseCPUCore):
         self.core.commitWidth=commitWidth
         self.core.squashWidth = commitWidth
 
-        self.core.numROBEntries=32
+        self.core.numROBEntries=8
         # Instruction queue depth
         self.core.numIQEntries=4
 
@@ -155,7 +155,7 @@ class VariableWidthO3Core(BaseCPUCore):
         self.core.commitToFetchDelay = penalty
 
 
-        self.fuPool = Lab2FUPool()
+        self.core.fuPool = Lab2FUPool()
 
 
 class VariableWidthO3Processor(BaseCPUProcessor):

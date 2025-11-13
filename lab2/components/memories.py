@@ -4,7 +4,7 @@ from gem5.components.memory.abstract_memory_system import AbstractMemorySystem
 from typing import Optional
 
 def MultiChannelDDR4_2400(
-    channels =2,
+    channels =4,
     size: Optional[str] = None
 ) -> AbstractMemorySystem:
     

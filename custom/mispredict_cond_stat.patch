@@ -1,0 +1,194 @@
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+index 9543f965b7..44a3405444 100644
+--- a/.vscode/settings.json
++++ b/.vscode/settings.json
+@@ -3,5 +3,21 @@
+         "src/python",
+         "ext",
+         "tests"
+-    ]
++    ],
++    "files.associations": {
++        "*.inc": "cpp",
++        "*.in": "cpp",
++        "complex": "cpp",
++        "fstream": "cpp",
++        "iomanip": "cpp",
++        "istream": "cpp",
++        "ostream": "cpp",
++        "regex": "cpp",
++        "*.def": "cpp",
++        "__config": "cpp",
++        "ios": "cpp",
++        "iosfwd": "cpp",
++        "locale": "cpp",
++        "print": "cpp"
++    }
+ }
+diff --git a/src/cpu/minor/MinorCPU.py b/src/cpu/minor/MinorCPU.py
+index 836a73f618..bda741e7cb 100644
+--- a/src/cpu/minor/MinorCPU.py
++++ b/src/cpu/minor/MinorCPU.py
+@@ -40,5 +40,14 @@ if len(enabled) == 1:
+     arch = enabled[0]
+     if arch == "USE_ARM_ISA":
+         from m5.objects.ArmCPU import ArmMinorCPU as MinorCPU
+-    if arch == "USE_RISCV_ISA":
++    elif arch == "USE_MIPS_ISA":
++        from m5.objects.MipsCPU import MipsMinorCPU as MinorCPU
++    elif arch == "USE_POWER_ISA":
++        from m5.objects.PowerCPU import PowerMinorCPU as MinorCPU
++    elif arch == "USE_RISCV_ISA":
+         from m5.objects.RiscvCPU import RiscvMinorCPU as MinorCPU
++    elif arch == "USE_SPARC_ISA":
++        from m5.objects.SparcCPU import SparcMinorCPU as MinorCPU
++    elif arch == "USE_X86_ISA":
++        from m5.objects.X86CPU import X86MinorCPU as MinorCPU
++    
+diff --git a/src/cpu/minor/fetch2.cc b/src/cpu/minor/fetch2.cc
+index b02294bfe6..b2203c4f40 100644
+--- a/src/cpu/minor/fetch2.cc
++++ b/src/cpu/minor/fetch2.cc
+@@ -72,7 +72,6 @@ Fetch2::Fetch2(const std::string &name,
+     nextStageReserve(next_stage_input_buffer),
+     outputWidth(params.decodeInputWidth),
+     processMoreThanOneInput(params.fetch2CycleInput),
+-    branchPredictor(*params.branchPred),
+     fetchInfo(params.numThreads),
+     threadPriority(0), stats(&cpu_)
+ {
+@@ -91,6 +90,8 @@ Fetch2::Fetch2(const std::string &name,
+                 name + ".inputBuffer" + std::to_string(tid), "lines",
+                 params.fetch2InputBufferSize));
+     }
++
++    branchPredictor = params.branchPred;
+ }
+ 
+ const ForwardLineData *
+@@ -154,34 +155,34 @@ Fetch2::updateBranchPrediction(const BranchData &branch)
+       case BranchData::UnpredictedBranch:
+         /* Unpredicted branch or barrier */
+         DPRINTF(Branch, "Unpredicted branch seen inst: %s\n", *inst);
+-        branchPredictor.squash(inst->id.fetchSeqNum,
++        branchPredictor->squash(inst->id.fetchSeqNum,
+             *branch.target, true, inst->id.threadId);
+         // Update after squashing to accomodate O3CPU
+         // using the branch prediction code.
+-        branchPredictor.update(inst->id.fetchSeqNum,
++        branchPredictor->update(inst->id.fetchSeqNum,
+             inst->id.threadId);
+         break;
+       case BranchData::CorrectlyPredictedBranch:
+         /* Predicted taken, was taken */
+         DPRINTF(Branch, "Branch predicted correctly inst: %s\n", *inst);
+-        branchPredictor.update(inst->id.fetchSeqNum,
++        branchPredictor->update(inst->id.fetchSeqNum,
+             inst->id.threadId);
+         break;
+       case BranchData::BadlyPredictedBranch:
+         /* Predicted taken, not taken */
+         DPRINTF(Branch, "Branch mis-predicted inst: %s\n", *inst);
+-        branchPredictor.squash(inst->id.fetchSeqNum,
++        branchPredictor->squash(inst->id.fetchSeqNum,
+             *branch.target /* Not used */, false, inst->id.threadId);
+         // Update after squashing to accomodate O3CPU
+         // using the branch prediction code.
+-        branchPredictor.update(inst->id.fetchSeqNum,
++        branchPredictor->update(inst->id.fetchSeqNum,
+             inst->id.threadId);
+         break;
+       case BranchData::BadlyPredictedBranchTarget:
+         /* Predicted taken, was taken but to a different target */
+         DPRINTF(Branch, "Branch mis-predicted target inst: %s target: %s\n",
+             *inst, *branch.target);
+-        branchPredictor.squash(inst->id.fetchSeqNum,
++        branchPredictor->squash(inst->id.fetchSeqNum,
+             *branch.target, true, inst->id.threadId);
+         break;
+     }
+@@ -203,7 +204,7 @@ Fetch2::predictBranch(MinorDynInstPtr inst, BranchData &branch)
+ 
+         DPRINTF(Branch, "Trying to predict for inst: %s\n", *inst);
+ 
+-        if (branchPredictor.predict(inst->staticInst,
++        if (branchPredictor->predict(inst->staticInst,
+                     inst->id.fetchSeqNum, *inst_pc, inst->id.threadId)) {
+             set(branch.target, *inst_pc);
+             inst->predictedTaken = true;
+diff --git a/src/cpu/minor/fetch2.hh b/src/cpu/minor/fetch2.hh
+index 26c3a5ad1f..80b8761ff9 100644
+--- a/src/cpu/minor/fetch2.hh
++++ b/src/cpu/minor/fetch2.hh
+@@ -91,8 +91,6 @@ class Fetch2 : public Named
+      *  there is room in the output to contain its processed data */
+     bool processMoreThanOneInput;
+ 
+-    /** Branch predictor passed from Python configuration */
+-    branch_prediction::BPredUnit &branchPredictor;
+ 
+   public:
+     /* Public so that Pipeline can pass it to Fetch1 */
+@@ -218,6 +216,10 @@ class Fetch2 : public Named
+      *  Execute halting Fetch1 causing Fetch2 to naturally drain.
+      *  Branch predictions are ignored by Fetch1 during halt */
+     bool isDrained();
++
++  private:
++    /** Branch predictor passed from Python configuration */
++    branch_prediction::BPredUnit *branchPredictor;
+ };
+ 
+ } // namespace minor
+diff --git a/src/cpu/pred/BranchPredictor.py b/src/cpu/pred/BranchPredictor.py
+index 47b985242d..fd683cabdb 100644
+--- a/src/cpu/pred/BranchPredictor.py
++++ b/src/cpu/pred/BranchPredictor.py
+@@ -227,6 +227,13 @@ class BranchPredictor(SimObject):
+         "in modern server CPUs: https://ieeexplore.ieee.org/document/9246215",
+     )
+ 
++class StaticBP(BranchPredictor):
++    type = "StaticBP"
++    cxx_class = "gem5::branch_prediction::StaticBP"
++    cxx_header = "cpu/pred/static.hh"
++
++    # Change between taken/not taken static predictor
++    predictTaken = Param.Bool(True, "Predict taken (True)/not taken (False)")
+ 
+ class LocalBP(BranchPredictor):
+     type = "LocalBP"
+diff --git a/src/cpu/pred/SConscript b/src/cpu/pred/SConscript
+index 6c03dd8a1b..591c14f162 100644
+--- a/src/cpu/pred/SConscript
++++ b/src/cpu/pred/SConscript
+@@ -47,7 +47,7 @@ SimObject('BranchPredictor.py',
+     'IndirectPredictor', 'SimpleIndirectPredictor',
+     'BranchTargetBuffer', 'SimpleBTB', 'BTBIndexingPolicy', 'BTBSetAssociative',
+     'ReturnAddrStack',
+-    'LocalBP', 'TournamentBP', 'BiModeBP', 'TAGEBase', 'TAGE', 'LoopPredictor',
++    'LocalBP', 'TournamentBP', 'BiModeBP', 'TAGEBase', 'TAGE', 'LoopPredictor', 'StaticBP',
+     'TAGE_SC_L_TAGE', 'TAGE_SC_L_TAGE_64KB', 'TAGE_SC_L_TAGE_8KB',
+     'LTAGE', 'TAGE_SC_L_LoopPredictor', 'StatisticalCorrector', 'TAGE_SC_L',
+     'TAGE_SC_L_64KB_StatisticalCorrector',
+@@ -63,6 +63,7 @@ SimObject('BranchPredictor.py',
+ 
+ Source('bpred_unit.cc')
+ Source('2bit_local.cc')
++Source('static.cc')
+ Source('simple_indirect.cc')
+ Source('indirect.cc')
+ Source('ras.cc')
+diff --git a/src/mem/ruby/protocol/Kconfig b/src/mem/ruby/protocol/Kconfig
+index 5b584fbedb..00c720ba6d 100644
+--- a/src/mem/ruby/protocol/Kconfig
++++ b/src/mem/ruby/protocol/Kconfig
+@@ -56,4 +56,8 @@ config RUBY_PROTOCOL_Garnet_standalone
+     bool "Garnet standalone"
+     default n
+ 
++config RUBY_PROTOCOL_MyMSI
++    bool "MyMSI"
++    default n
++
+ rsource "chi/Kconfig"

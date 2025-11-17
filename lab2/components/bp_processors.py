@@ -3,7 +3,7 @@ from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
 from gem5.isas import ISA
 from m5.objects import X86O3CPU 
 from m5.objects.FuncUnit import *
-from FuncUnitConfig import *
+from components.FuncUnitConfig import *
 from m5.objects.FUPool import *
  
 """
@@ -111,13 +111,13 @@ class VariableO3Processor(BaseCPUProcessor):
 # Helper class to configure the functional units
 class Lab2FUPool(FUPool):
     FUList = [
-        IntALU(count=1),
+        IntALU(),
         IntMultDiv(),
         FP_ALU(),
         FP_MultDiv(),
         ReadPort(),
         SIMD_Unit(),
-        # Matrix_Unit(),
+    #    Matrix_Unit(),
         PredALU(),
         WritePort(),
         RdWrPort(),
@@ -130,7 +130,7 @@ class Lab2FUPool(FUPool):
 
 class VariableWidthO3Core(BaseCPUCore):
     
-    def __init__(self, predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
+    def __init__(self, predictor, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
         super().__init__(X86O3CPU(), ISA.X86)
         # Choose pipeline width for each stage
         self.core.fetchWidth=fetchWidth
@@ -141,26 +141,20 @@ class VariableWidthO3Core(BaseCPUCore):
         self.core.wbWidth = issueWidth
         self.core.commitWidth=commitWidth
         self.core.squashWidth = commitWidth
-
-        self.core.numROBEntries=8
-        # Instruction queue depth
-        self.core.numIQEntries=4
-
-        # We can't limit these further, as there is a lower limit to how many we need.
-        self.core.numPhysIntRegs=64
-        self.core.numPhysFloatRegs=64
-
+		# Limit the size of ROB and instruction queue depth when we have "in-order"
+        if commitWidth == 1:
+            self.core.numROBEntries=8
+            self.core.numIQEntries=4
+            self.core.numPhysIntRegs=64
+            self.core.numPhysFloatRegs=64
         # Specify branch predictor, passed from instantiation of this class
         self.core.branchPred = predictor
-        self.core.commitToFetchDelay = penalty
-
-
         self.core.fuPool = Lab2FUPool()
 
 
 class VariableWidthO3Processor(BaseCPUProcessor):
-    def __init__(self,predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
+    def __init__(self,num_cores, predictor, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth):
         # Single-core system, but BaseCPUProcessor expects list of cores
-        cores = [VariableWidthO3Core(predictor, penalty, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth)for _ in range(2)]
+        cores = [VariableWidthO3Core(predictor, fetchWidth, decodeWidth, renameWidth, issueWidth, commitWidth)for _ in range(num_cores)]
         super().__init__(cores)
 

@@ -7,29 +7,15 @@ from components.FuncUnitConfig import *
 from m5.objects.FUPool import *
  
 """
-'In-order' single-core processor
-
-This processor will not be a TRUE in-order processor. There is a detailed in-order CPU model: MinorCPU,
-but it has some severe limitations:
-    - cannot run multi-threaded applications
-    - branch predictor statistics are NOT recorded
-
-There are two ways we can solve this:
-    - Implement statistics recording for MinorCPU
-    - Use another model, which we do and describe below
-
-We use the more detailed out-of-order O3Core, but constrain it so much that it essentially
-acts as an in-order processor. This will not emulate a true in-order processor, but for our experiments
-with comparing branch predictors it is good enough!
+Single-issue single-core processor
 """
-class VariableBPInOrderCore(BaseCPUCore):
+class VariableBPSingleIssueCore(BaseCPUCore):
     def __init__(self,bp):
         super().__init__(X86O3CPU(), ISA.X86)
         # Specify branch predictor, passed from instantiation of this class
         self.core.branchPred = bp
 
-        # Constrain pipeline width, if width is 1 it doesn't really matter how
-        # much we do in-order
+        # Constrain pipeline width
         self.core.fetchWidth=1
         self.core.decodeWidth=1
         self.core.issueWidth=1
@@ -43,15 +29,15 @@ class VariableBPInOrderCore(BaseCPUCore):
         self.core.numPhysIntRegs=64
         self.core.numPhysFloatRegs=64
 
-class VariableBPInOrderProcessor(BaseCPUProcessor):
+class VariableBPSingleIssueProcessor(BaseCPUProcessor):
     def __init__(self,bp):
         # Single-core system, but BaseCPUProcessor expects list of cores
-        cores = [VariableBPInOrderCore(bp) for _ in range(1)]
+        cores = [VariableBPSingleIssueCore(bp) for _ in range(1)]
         super().__init__(cores)
 
 
 """
-Out-of-order single-core processor
+Multiple-issue Out-of-order single-core processor
 """
 class VariableBPO3Core(BaseCPUCore):
     def __init__(self,bp):

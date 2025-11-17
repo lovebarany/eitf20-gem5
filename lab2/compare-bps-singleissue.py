@@ -1,5 +1,5 @@
 from argparser import get_workload
-from components.bp_processors import VariableBPInOrderProcessor
+from components.bp_processors import VariableBPSingleIssueProcessor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
 from gem5.components.memory.single_channel import SingleChannelDDR4_2400
@@ -34,7 +34,7 @@ cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
 memory = SingleChannelDDR4_2400(size='4GB')
 
 # Processor
-processor = VariableBPInOrderProcessor(
+processor = VariableBPSingleIssueProcessor(
         bp = INSERT_BP_HERE()
 )
 

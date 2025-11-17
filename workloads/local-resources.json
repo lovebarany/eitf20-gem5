@@ -64,14 +64,13 @@
 	},
 	{
 		"category": "binary",
-		"id": "binary-search",
-		"description": "Binary search algorithm on a list with 300 elements",
+		"id": "fft",
+		"description": "Fast Fourier Transform",
 		"architecture": "X86",
 		"size": "1",
 		"tags": [],
 		"is_zipped": false,
 		"md5sum": "FILL IN MD5SUM",
-		"source": "https://gist.github.com/rcanepa/fc29c00c4185c4a13b54",
 		"url": "FILL IN PATH",
 		"author": [
 			"Dumitra Iancu",
@@ -81,6 +80,6 @@
 		"gem5_versions": [
 			"25.0"
 		],
-		"example_usage": "obtain_resource(resource_id=\"binary-search\")"
+		"example_usage": "obtain_resource(resource_id=\"fft\")"
 	}
 ]

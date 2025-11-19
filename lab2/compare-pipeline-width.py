@@ -8,7 +8,8 @@ from gem5.simulate.simulator import Simulator
 from m5.objects import StaticBP, LocalBP, TournamentBP, BiModeBP
 from argparser import get_workload
 import os
-
+from pathlib import Path
+from gem5.resources.resource import BinaryResource
 # L1D and L1I, unified L2
 # L1D and L1I will have associativity 8, L2 will have associativity 4
 cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
@@ -42,7 +43,13 @@ board = SimpleBoard(
 )
 
 # Sets the workload based on the --workload=WORKLOAD
-board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
+#board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
+binary_path = Path("/home/dumitra/gem5-2025/gem5/eitf20-gem5/workloads/a.out")
+board.set_se_binary_workload(
+    binary = BinaryResource(
+        local_path=binary_path.as_posix()
+    )
+)
 
 simulator = Simulator(board=board)
 simulator.run()

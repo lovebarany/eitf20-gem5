@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <complex>
-
+#include <gem5/m5ops.h>
 using namespace std;
 
 #define FALSE 0
@@ -175,9 +175,11 @@ int main(int argc, const char* argv[])
 	cout << "Input array:" << endl;
 
 	printlist(s, samples, FALSE);
-	
+	// this is where we start recording statistics
+	m5_work_begin(0, 0);
 	fast_fourier(s,samples);
-
+	// and this is where we end
+	m5_work_end(0, 0);
 	cout << "Output array: " << endl;
 	printlist(s,samples,TRUE);
 

@@ -127,7 +127,7 @@ class VariableWidthO3Core(BaseCPUCore):
         self.core.wbWidth = issueWidth
         self.core.commitWidth=commitWidth
         self.core.squashWidth = commitWidth
-		# Limit the size of ROB and instruction queue depth when we have "in-order"
+	# Limit the size of ROB and instruction queue depth 
         if commitWidth == 1:
             self.core.numROBEntries=8
             self.core.numIQEntries=4

@@ -1,7 +1,9 @@
 #include <stdio.h>
-
+#include <gem5/m5ops.h>
 int main()
 {
+    // this is where we start recording statistics
+    m5_work_begin(0, 0);
     const int size = 30;
     int first_int[size][size], second_int[size][size], multiply_int[size][size];
     float first_float[size][size], second_float[size][size], multiply_float[size][size];
@@ -78,5 +80,7 @@ int main()
     printf("Done\n");
 
     printf("The floating point sum is %f\n", sum_float);
+    // and this is where we end
+    m5_work_end(0, 0);
     return 0;
 }

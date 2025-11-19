@@ -6,7 +6,7 @@ from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
 
-from m5.objects import TournamentBP, BiModeBP
+from m5.objects import TournamentBP, StaticBP
 """
 TournamentBP -> tournament
 Parameters: (leave these at default values, i.e. don't specify any)
@@ -17,12 +17,10 @@ Parameters: (leave these at default values, i.e. don't specify any)
     - globalCtrBits: unsigned. n, number of bits in global saturation counters.
     - choicePredictorSize: unsigned. Number of n-bit counters in choice predictor.
     - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
-BiModeBP -> bimode
-Parameters: (leave these at default values, i.e. don't specify any)
-    - globalPredictorSize: unsigned. Number of n-bit counters in global table.
-    - globalCtrBits: unsigned. n, number of bits in global saturation counters.
-    - choicePredictorSize: unsigned. Number of n-bit counters in choice predictor.
-    - choiceCtrBits: unsigned. n, number of bits in choice predictor saturation counters.
+StaticBP -> taken/nottaken
+StaticBP(predictTaken=True/False)
+Parameters:
+    - predictTaken: boolean. Changes predictor from taken (true) and nottaken (false)
 
 """
 import os

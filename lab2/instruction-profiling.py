@@ -1,11 +1,11 @@
 from components.bp_processors import VariableWidthO3Processor
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
-from gem5.components.memory.single_channel import SingleChannelDDR4_2400
+from gem5.components.memory.multi_channel import DualChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
 
-from m5.objects import StaticBP, LocalBP, TournamentBP, BiModeBP
+from m5.objects import LocalBP
 from argparser import get_workload
 import os
 
@@ -18,10 +18,9 @@ cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
 )
 
 # Memory
-memory = SingleChannelDDR4_2400(size='4GB')
+memory = DualChannelDDR4_2400(size='8GiB')
 
-# Change the pipeline width!
-pw = 8
+pw = 4
 # Processor
 processor = VariableWidthO3Processor(
 		num_cores = 1,

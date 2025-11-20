@@ -5,7 +5,11 @@ from gem5.components.processors.simple_processor import SimpleProcessor
 from gem5.components.processors.cpu_types import CPUTypes
 from gem5.isas import ISA
 from gem5.resources.resource import obtain_resource
-from gem5.simulate.simulator import Simulator
+from gem5.simulate.simulator import (
+        ExitEvent,
+        Simulator,
+)
+import m5
 
 cache_hierarchy = NoCache()
 
@@ -26,5 +30,18 @@ board = SimpleBoard(
 # Sets the workload based on the --benchmark=WORKLOAD
 board.set_se_binary_workload(obtain_resource("hello-gem5"))
 
-simulator = Simulator(board=board)
+def workbegin_handler():
+    m5.stats.reset()
+    yield False
+def workend_handler():
+    yield False
+
+simulator = Simulator(
+        board=board,
+        on_exit_event={
+            ExitEvent.WORKBEGIN: workbegin_handler(),
+            ExitEvent.WORKEND: workend_handler(),
+        }
+)
+
 simulator.run()

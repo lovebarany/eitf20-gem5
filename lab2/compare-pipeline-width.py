@@ -3,9 +3,13 @@ from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
 from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
-from gem5.simulate.simulator import Simulator
+from gem5.simulate.simulator import (
+        ExitEvent,
+        Simulator,
+)
 
 from m5.objects import StaticBP, LocalBP, TournamentBP, BiModeBP
+import m5
 from argparser import get_workload
 import os
 from pathlib import Path
@@ -51,5 +55,18 @@ board.set_se_binary_workload(
     )
 )
 
-simulator = Simulator(board=board)
+def workbegin_handler():
+    m5.stats.reset()
+    yield False
+def workend_handler():
+    yield False
+
+simulator = Simulator(
+        board=board,
+        on_exit_event={
+            ExitEvent.WORKBEGIN: workbegin_handler(),
+            ExitEvent.WORKEND: workend_handler(),
+        }
+)
+
 simulator.run()

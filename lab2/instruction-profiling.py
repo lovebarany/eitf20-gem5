@@ -5,7 +5,7 @@ from gem5.components.memory.multi_channel import DualChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
 
-from m5.objects import LocalBP
+from m5.objects import LocalBP,StaticBP
 from argparser import get_workload
 import os
 
@@ -24,7 +24,7 @@ pw = 4
 # Processor
 processor = VariableWidthO3Processor(
 		num_cores = 1,
-        predictor = LocalBP(), 
+        predictor = StaticBP(predictTaken=False), 
         fetchWidth= pw,
         decodeWidth= pw,
         renameWidth = pw,

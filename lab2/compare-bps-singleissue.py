@@ -9,7 +9,7 @@ from gem5.simulate.simulator import (
         Simulator,
 )
 
-from m5.objects import StaticBP, LocalBP
+from m5.objects import StaticBP, LocalBP, MultiperspectivePerceptronTAGE64KB
 import m5
 """
 StaticBP -> taken/nottaken
@@ -22,6 +22,11 @@ LocalBP()
 Parameters: (leave these at default values, i.e. don't specify any) 
     - localPredictorSize: unsigned. Changes the number of entries in the n-bit counter table. Default: 2048
     - localCtrBits: unsigned. n, number of bits in the saturation counters. Keep this at 2 for this experiment!
+MultiperspectivePerceptronTAGE64KB -> Multiperspective Perceptron Predictor with TAGE
+MultiperspectivePerceptronTAGE64KB()
+Parameters: (leave these at default values, i.e. don't specify any)
+    - budgetbits: int. Hardware budget, default is 64.25KB (which should be very good)
+    - speculativeHistUpdate: boolean. Control whether branch history (taken/not taken) is updated BEFORE resolution is made. False by default.
 """
 import os
 

@@ -3,7 +3,7 @@
 This repository contains the provided files for the labs that use gem5 in the Computer Architecture course at Lund University.
 
 **Current status**:
-- lab2: WIP
+- lab2: FINISHED
 - lab4: WIP
 
 ## Directory structure

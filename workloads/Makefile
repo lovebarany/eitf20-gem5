@@ -22,7 +22,9 @@ $(OUTDIR)/$(BUBBLESORT).o: $(BUBBLESORT)/$(BUBBLESORT).cpp
 	-L$(GEM5_PATH)/util/m5/build/x86/out -lm5 -static-libstdc++
 	md5sum $(OUTDIR)/$(BUBBLESORT).o
 $(OUTDIR)/$(MATMUL).o: $(MATMUL)/$(MATMUL).c
-	$(CXX) $(MATMUL)/$(MATMUL).c -o $(OUTDIR)/$(MATMUL).o -I/usr/local-eit/cad2/gem5/gem5/include -L/usr/local-eit/cad2/gem5/gem5/util/m5/build/x86/out -lm5 -static-libstdc++
+	$(CXX) $(MATMUL)/$(MATMUL).c -o $(OUTDIR)/$(MATMUL).o \
+	-I$(GEM5_PATH)/include \
+	-L$(GEM5_PATH)/util/m5/build/x86/out -lm5 -static-libstdc++
 	md5sum $(OUTDIR)/$(MATMUL).o
 $(OUTDIR)/$(HELLO).o: $(HELLO)/$(HELLO).c
 	$(CXX) $(HELLO)/$(HELLO).c -o $(OUTDIR)/$(HELLO).o \ 

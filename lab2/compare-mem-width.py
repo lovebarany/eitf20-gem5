@@ -6,28 +6,16 @@ from gem5.simulate.simulator import (
         ExitEvent,
         Simulator,
 )
-from m5.objects import TournamentBP
 from components.memories import MultiChannelDDR4_2400
-from gem5.components.cachehierarchies.classic.private_l1_private_l2_cache_hierarchy import PrivateL1PrivateL2CacheHierarchy
-
-from m5.objects import StaticBP, LocalBP
+from m5.objects import LocalBP
 import m5
-#from gem5.components.memory import ChanneledMemory
-#from gem5.components.dram_interfaces.ddr4 import DDR4_2400_8x8
-from gem5.components.memory.multi_channel import DualChannelDDR4_2400
 from argparser import get_workload
 import os
 
-# L1D and L1I, unified L2
-# L1D and L1I will have associativity 8, L2 will have associativity 4
-cache_hierarchy = PrivateL1PrivateL2CacheHierarchy(
-        l1d_size='4kB',
-        l1i_size='16kB',
-        l2_size='1024kB',
-)
 cache_hierarchy = NoCache()
+mc = 1
 # A multi channel memory system using DDR4_2400_8x8 based DIMM with an address space of 16GB
-memory = MultiChannelDDR4_2400(1, size='4GiB')
+memory = MultiChannelDDR4_2400(mc, size='4GiB')
 
 pw = 1
 # Processor

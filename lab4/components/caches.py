@@ -190,6 +190,7 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
     def __init__(
             self,
             l1_sets: int,
+            l1_assoc: int,
             l1_block_size: int,
             l2_sets: int,
             l2_assoc: int,
@@ -199,7 +200,7 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
 
         self._l1_block_size = l1_block_size
         # Fixed L1 associativity
-        self._l1_assoc = 2
+        self._l1_assoc = l1_assoc
         self._l2_block_size = l2_block_size
         self._l2_assoc = l2_assoc
         # Compute the size based on block size, associativity, and number of sets
@@ -210,7 +211,6 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
         assert l1_block_size in [16,32,64,128,256], f"L1 Cache block size should be either 16, 32, 64, 128, or 256 Bytes, is {self._l1_block_size}"
         assert l1_size==(32*1024), f"L1 Cache size should be 32kB, is {l1_size//1024}kB"
         assert l2_size==(512*1024), f"L2 Cache size should be 512kB, is {l2_size//1024}kB"
-        assert self._l2_block_size>=256, f"L2 Cache block size should be at least 256, is {self._l2_block_size}"
 
         self._l1_size = l1_size
         self._l2_size = l2_size

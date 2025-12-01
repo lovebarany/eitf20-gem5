@@ -1,3 +1,4 @@
+from argparser import get_workload
 from components.board_variable_block_size import BoardVariableBlockSize
 from components.caches import UnifiedL1, L1DOnly, L1IOnly
 from components.processor import Processor
@@ -6,22 +7,32 @@ from gem5.resources.resource import obtain_resource
 from gem5.simulate.simulator import Simulator
 import os
 
-# We specify it here because we need to set it in several locations!
-block_size = 32 # Bytes. Don't change for this experiment. 
+# Cache parameters
+block_size = 32 # Bytes
+l1_assoc = ASSOC
+l1_sets = 32
 
-memory = DualChannelDDR4_2400(size="2GB")
+memory = DualChannelDDR4_2400(size="8GB")
 
-cache_hierarchy = UnifiedL1(l1_sets=64,l1_assoc=4,block_size=block_size)
+
+# Unified: UnifiedL1
+# Data-only: L1DOnly
+# Instruction-only: L1IOnly
+cache_hierarchy = UnifiedL1(
+        l1_sets=l1_sets,
+        l1_assoc=l1_assoc,
+        block_size=block_size
+)
 
 board = BoardVariableBlockSize(
-        clk_freq="3GHz",
+        clk_freq="1GHz",
         memory=memory,
         cache_hierarchy=cache_hierarchy,
         processor=Processor(block_size=block_size),
         block_size=block_size, 
 )
 
-board.set_se_binary_workload(obtain_resource("WORKLOAD"), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
+board.set_se_binary_workload(obtain_resource(get_workload()), env_list=[f"LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}"])
 
 simulator = Simulator(board=board)
 simulator.run()

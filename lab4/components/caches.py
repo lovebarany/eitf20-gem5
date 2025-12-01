@@ -9,7 +9,7 @@ from m5.objects import *
 
 class L1Cache(AbstractClassicCacheHierarchy):
     """
-    A cache hierarchy only consisting of a unified L1 cache
+    A cache hierarchy only consisting of a L1 cache. Extended to be either Unified only, L1D only, or L1I only
     """
 
     def _get_default_membus(self) -> SystemXBar:
@@ -124,7 +124,7 @@ class L1DOnly(L1Cache):
         self.connect_mem_system(board)
 
         self.l1dcaches = [
-                L1DCache(size=f"{self._l1d_size//1024}kB",assoc=self._l1d_assoc)
+                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1d_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
 
@@ -155,8 +155,8 @@ class L1IOnly(L1Cache):
     def incorporate_cache(self, board: AbstractBoard) -> None:
         self.connect_mem_system(board)
 
-        self.l1dcaches = [
-                L1DCache(size=f"{self._l1d_size//1024}kB",assoc=self._l1d_assoc)
+        self.l1icaches = [
+                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1d_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
 
@@ -164,9 +164,9 @@ class L1IOnly(L1Cache):
             # CPU data line -> Membus
             cpu.connect_dcache(self.get_cpu_side_port())
             # CPU instruction line -> L1I
-            cpu.connect_icache(self.l1dcaches[i].cpu_side)
+            cpu.connect_icache(self.l1icaches[i].cpu_side)
             # L1I -> Membus
-            self.l1dcaches[i].mem_side = self.get_cpu_side_port()
+            self.l1icaches[i].mem_side = self.get_cpu_side_port()
 
             self.connect_interrupts(cpu)
 

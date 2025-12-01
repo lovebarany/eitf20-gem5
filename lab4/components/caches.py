@@ -124,7 +124,7 @@ class L1DOnly(L1Cache):
         self.connect_mem_system(board)
 
         self.l1dcaches = [
-                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1d_assoc)
+                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
 
@@ -156,7 +156,7 @@ class L1IOnly(L1Cache):
         self.connect_mem_system(board)
 
         self.l1icaches = [
-                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1d_assoc)
+                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
 

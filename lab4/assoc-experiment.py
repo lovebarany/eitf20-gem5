@@ -1,6 +1,6 @@
 from argparser import get_workload
 from components.board_variable_block_size import BoardVariableBlockSize
-from components.caches import UnifiedL1, L1DOnly, L1IOnly
+from components.caches import UnifiedL1, SeparateL1
 from components.processor import Processor
 from gem5.components.memory.multi_channel import DualChannelDDR4_2400
 from gem5.resources.resource import obtain_resource
@@ -16,9 +16,8 @@ memory = DualChannelDDR4_2400(size="8GB")
 
 
 # Unified: UnifiedL1
-# Data-only: L1DOnly
-# Instruction-only: L1IOnly
-cache_hierarchy = UnifiedL1(
+# Separate: SeparateL1
+cache_hierarchy = CACHE(
         l1_sets=l1_sets,
         l1_assoc=l1_assoc,
         block_size=block_size

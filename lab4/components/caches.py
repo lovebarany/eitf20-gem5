@@ -106,12 +106,11 @@ class UnifiedL1(L1Cache):
 
             self.connect_interrupts(cpu)
 
-class L1DOnly(L1Cache):
+class SeparateL1(L1Cache):
     """
-    L1-only cache. Only data memory is connected to cache, instruction directly
-    to memory.
+    L1-only cache, separate data and instruction cache.
+    L1D and L1I will have the same size, each the same as the unified above
     """
-
     def __init__(
             self,
             l1_sets: int,
@@ -121,52 +120,32 @@ class L1DOnly(L1Cache):
         super().__init__(l1_sets=l1_sets,l1_assoc=l1_assoc,block_size=block_size)
 
     def incorporate_cache(self, board: AbstractBoard) -> None:
+        """
+        Connect the cache to the processor.
+        """
+
         self.connect_mem_system(board)
 
+        # One private L1D cache per core
         self.l1dcaches = [
+                # Specify the size as the computed size (in Bytes) divided by 1000
                 L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
-
-        for i, cpu in enumerate(board.get_processor().get_cores()):
-            # CPU instruction line -> Membus
-            cpu.connect_icache(self.get_cpu_side_port())
-            # CPU data line -> L1D
-            cpu.connect_dcache(self.l1dcaches[i].cpu_side)
-            # L1D -> Membus
-            self.l1dcaches[i].mem_side = self.get_cpu_side_port()
-
-            self.connect_interrupts(cpu)
-
-class L1IOnly(L1Cache):
-    """
-    L1-only cache. Only instruction memory is connected to cache, data directly
-    to memory.
-    """
-
-    def __init__(
-            self,
-            l1_sets: int,
-            l1_assoc: int,
-            block_size: int,
-            ):
-        super().__init__(l1_sets=l1_sets,l1_assoc=l1_assoc,block_size=block_size)
-
-    def incorporate_cache(self, board: AbstractBoard) -> None:
-        self.connect_mem_system(board)
-
+        # One private L1I cache per core
         self.l1icaches = [
-                L1DCache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
+                # Specify the size as the computed size (in Bytes) divided by 1000
+                L1ICache(size=f"{self._l1_size//1024}kB",assoc=self._l1_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
-            # CPU data line -> Membus
-            cpu.connect_dcache(self.get_cpu_side_port())
-            # CPU instruction line -> L1I
-            cpu.connect_icache(self.l1icaches[i].cpu_side)
-            # L1I -> Membus
-            self.l1icaches[i].mem_side = self.get_cpu_side_port()
+            # CPU -> Caches
+            cpu.connect_icache(self.l1icaches[i].cpu_side_ports)
+            cpu.connect_dcache(self.l1dcaches[i].cpu_side_ports)
+            # Caches -> Membus
+            self.membus.cpu_side_ports = self.l1icaches[i].mem_side
+            self.membus.cpu_side_ports = self.l1dcaches[i].mem_side
 
             self.connect_interrupts(cpu)
 

@@ -158,41 +158,36 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
         """
         A method used to obtain the default memory bus for this hierarchy.
 
-        The width is controlled by the l2_block_size parameter passed during
+        The width is controlled by the block_size parameter passed during
         class construction.
 
         :returns: The default memory bus for the UnifiedL1L2 cache
         """
-        membus = SystemXBar(width=self._l2_block_size)
+        membus = SystemXBar(width=self._l1_block_size)
         return membus
 
     def __init__(
             self,
             l1_sets: int,
-            l1_assoc: int,
             l1_block_size: int,
-            l2_sets: int,
-            l2_assoc: int,
-            l2_block_size: int,
             ):
         AbstractClassicCacheHierarchy.__init__(self=self)
 
+        # Variable block size
         self._l1_block_size = l1_block_size
         # Fixed L1 associativity
-        self._l1_assoc = l1_assoc
-        self._l2_block_size = l2_block_size
-        self._l2_assoc = l2_assoc
+        self._l1_assoc = 2
+        # Fixed L2 associativity
+        self._l2_assoc = 4
         # Compute the size based on block size, associativity, and number of sets
         l1_size = self._l1_assoc*l1_sets*self._l1_block_size
-        l2_size = self._l2_assoc*l2_sets*self._l2_block_size
 
         # Ensure values are correct
         assert l1_block_size in [16,32,64,128,256], f"L1 Cache block size should be either 16, 32, 64, 128, or 256 Bytes, is {self._l1_block_size}"
-        assert l1_size==(32*1024), f"L1 Cache size should be 32kB, is {l1_size//1024}kB"
-        assert l2_size==(512*1024), f"L2 Cache size should be 512kB, is {l2_size//1024}kB"
+        assert l1_size==(8*1024), f"L1 Cache size should be 8KB, is {l1_size//1024}KB"
 
         self._l1_size = l1_size
-        self._l2_size = l2_size
+        self._l2_size = 512 #KB, fixed
 
         self.membus = self._get_default_membus()
 
@@ -221,7 +216,7 @@ class UnifiedL1L2(AbstractClassicCacheHierarchy):
                 for _ in range(board.get_processor().get_num_cores())
                 ]
         self.l2caches = [
-                L2Cache(size=f"{self._l2_size//1024}kB",assoc=self._l2_assoc)
+                L2Cache(size=f"{self._l2_size}kB",assoc=self._l2_assoc)
                 for _ in range(board.get_processor().get_num_cores())
                 ]
         """

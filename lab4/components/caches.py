@@ -141,8 +141,8 @@ class SeparateL1(L1Cache):
 
         for i, cpu in enumerate(board.get_processor().get_cores()):
             # CPU -> Caches
-            cpu.connect_icache(self.l1icaches[i].cpu_side_ports)
-            cpu.connect_dcache(self.l1dcaches[i].cpu_side_ports)
+            cpu.connect_icache(self.l1icaches[i].cpu_side)
+            cpu.connect_dcache(self.l1dcaches[i].cpu_side)
             # Caches -> Membus
             self.membus.cpu_side_ports = self.l1icaches[i].mem_side
             self.membus.cpu_side_ports = self.l1dcaches[i].mem_side

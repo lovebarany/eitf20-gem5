@@ -176,10 +176,10 @@ int main(int argc, const char* argv[])
 
 	printlist(s, samples, FALSE);
 	// this is where we start recording statistics
-	m5_work_begin(0, 0);
+    m5_reset_stats(0, 0);
 	fast_fourier(s,samples);
 	// and this is where we end
-	m5_work_end(0, 0);
+    m5_dump_reset_stats(0, 0);
 	cout << "Output array: " << endl;
 	printlist(s,samples,TRUE);
 

@@ -27,4 +27,6 @@ and rebuild gem5.
 
 ## Workloads
 
-You will need to compile all workloads, which can be done with the makefile. Then, you will have to update workloads/local-resources.json with the path to the binaries, and the md5sum of the binaries. Finally, you will need to append workloads/local-resources.json to the gem5 resource path.
+You will need to compile all workloads, which can be done with the makefile `workloads/Makefile`. You need to specify where the gem5 repository is located. Also note that you need to build m5 as well.
+
+Then, you will have to update `workloads/local-resources.json` with the path to the binaries, and the md5sum of the binaries. Finally, you will need to append `workloads/local-resources.json` to the gem5 resource path.

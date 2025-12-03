@@ -6,7 +6,7 @@ BUBBLESORT = bubblesort
 MATMUL = matrix-multiply
 HELLO = hello-gem5
 OUTDIR = binaries
-GEM5_PATH=/usr/local-eit/cad2/gem5/gem5
+GEM5_PATH=PATH_TO_GEM5
 FLAGS = -I$(GEM5_PATH)/include -L$(GEM5_PATH)/util/m5/build/x86/out -lm5 -static-libstdc++
 clean:
 	rm $(OUTDIR)/*.o

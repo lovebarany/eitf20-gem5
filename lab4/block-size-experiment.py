@@ -9,7 +9,7 @@ import os
 
 # Cache parameters
 block_size = BLOCK_SIZE # Bytes
-l1_sets = NUM_SETS # The L1 cache size should be 32KB, so modify block_size and sets so that that is the case
+l1_sets = NUM_SETS # The L1 cache size should be 8KB, so modify block_size and sets so that that is the case
 
 memory = DualChannelDDR4_2400(size="8GB", interleaving_size=block_size)
 
